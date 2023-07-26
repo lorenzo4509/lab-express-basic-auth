@@ -1,35 +1,47 @@
-// ℹ️ Gets access to environment variables/settings
-// https://www.npmjs.com/package/dotenv
+const express = require('express');
+const sessionConfig = require('./routes/session.config');
+const hbs = require('hbs');
+const app = express();
 require('dotenv/config');
 
-// ℹ️ Connects to the database
+// Other required imports and configurations
+// ...
+
+// Connect to the database
 require('./db');
 
-// Handles http requests (express is node js framework)
-// https://www.npmjs.com/package/express
-const express = require('express');
-
-// Handles the handlebars
-// https://www.npmjs.com/package/hbs
-const hbs = require('hbs');
-
-const app = express();
-
-// ℹ️ This function is getting exported from the config folder. It runs most middlewares
+// Set up session configuration
+sessionConfig(app);
 require('./config')(app);
-
-// default value for title local
 const projectName = 'lab-express-basic-auth';
 const capitalized = string => string[0].toUpperCase() + string.slice(1).toLowerCase();
 
 app.locals.title = `${capitalized(projectName)}- Generated with Ironlauncher`;
 
-// 👇 Start handling routes here
+
+// Other middleware configurations and routes
+// ...
+
+// Use the authRoutes from authRoutes.js\
 const index = require('./routes/index');
 app.use('/', index);
 
-// ❗ To handle errors. Routes that don't exist or errors that you handle in specific routes
+const authRoutes = require('./routes/authRoutes');
+app.use('/auth', authRoutes);
+
+// Additional routes (protected by isAuthenticated middleware)
+const { isAuthenticated } = require('./middleware/route-guard'); 
+
+app.get('/main', isAuthenticated, (req, res) => {
+  res.render('main'); // Replace 'main' with the name of your main.hbs file
+});
+
+app.get('/private', isAuthenticated, (req, res) => {
+  res.render('private'); // Replace 'private' with the name of your private.hbs file
+});
+
+// Error handling
+// ...
 require('./error-handling')(app);
 
 module.exports = app;
-
