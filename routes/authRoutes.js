@@ -2,6 +2,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const User = require('../models/User.model'); 
 const router = express.Router();
+const { isAuthenticated } = require('../middleware/route-guard'); 
 
 // GET route for the registration form
 router.get('/signup', (req, res) => { 
@@ -72,6 +73,15 @@ router.post('/logout', (req, res) => {
     }
     res.redirect('/auth/login');
   });
+});
+
+router.get('/main', isAuthenticated, (req, res) => {
+  res.render('main');
+});
+
+// Ruta protegida por autenticación: Private Page
+router.get('/private', isAuthenticated, (req, res) => {
+  res.render('private');
 });
 
 module.exports = router;
