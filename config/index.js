@@ -12,10 +12,19 @@ const cookieParser = require("cookie-parser");
 // ℹ️ Serves a custom favicon on each request
 // https://www.npmjs.com/package/serve-favicon
 const favicon = require("serve-favicon");
-
 // ℹ️ global package used to `normalize` paths amongst different operating systems
 // https://www.npmjs.com/package/path
 const path = require("path");
+
+const session = require("express-session");
+
+// ℹ️ MongoStore in order to save the user session in the database
+// https://www.npmjs.com/package/connect-mongo
+const MongoStore = require("connect-mongo");
+
+// Connects the mongo uri to maintain the same naming structure
+const MONGO_URI =
+  process.env.MONGODB_URI || "mongodb://0.0.0.0:27017/lab-express-basic-auth";
 
 // Middleware configuration
 module.exports = (app) => {
@@ -35,5 +44,18 @@ module.exports = (app) => {
   app.use(express.static(path.join(__dirname, "..", "public")));
 
   // Handles access to the favicon
-  app.use(favicon(path.join(__dirname, "..", "public", "images", "favicon.ico")));
+  app.use(
+    favicon(path.join(__dirname, "..", "public", "images", "favicon.ico"))
+  );
+
+  app.use(
+    session({
+      secret: process.env.SESSION_SECRET || "super hyper secret key",
+      resave: false,
+      saveUninitialized: false,
+      store: MongoStore.create({
+        mongoUrl: MONGO_URI,
+      }),
+    })
+  );
 };

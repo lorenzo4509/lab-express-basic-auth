@@ -1,34 +1,46 @@
-const express = require("express");
-const sessionConfig = require("./routes/session.config");
-const hbs = require("hbs");
-const app = express();
+// ℹ️ Gets access to environment variables/settings
+// https://www.npmjs.com/package/dotenv
 require("dotenv/config");
 
-// Other required imports and configurations
-// ...
-
-// Connect to the database
+// ℹ️ Connects to the database
 require("./db");
 
-// Set up session configuration
-sessionConfig(app);
+// Handles http requests (express is node js framework)
+// https://www.npmjs.com/package/express
+const express = require("express");
+
+// Handles the handlebars
+// https://www.npmjs.com/package/hbs
+const hbs = require("hbs");
+
+const app = express();
+
+// ℹ️ This function is getting exported from the config folder. It runs most middlewares
 require("./config")(app);
+
+// default value for title local
 const projectName = "lab-express-basic-auth";
 const capitalized = (string) =>
   string[0].toUpperCase() + string.slice(1).toLowerCase();
 
 app.locals.title = `${capitalized(projectName)}- Generated with Ironlauncher`;
 
-// Other middleware configurations and routes
-// ...
-
-// Use the authRoutes from authRoutes.js\
+app.use(function (req, res, next) {
+  if (req.session.currentUser) {
+    res.locals.user = req.session.currentUser;
+  }
+  next();
+});
+// 👇 Start handling routes here
 const index = require("./routes/index");
 app.use("/", index);
 
-const authRoutes = require("./routes/authRoutes");
-app.use("/auth", authRoutes);
+const authRouter = require("./routes/auth.routes"); // <== has to be added
+app.use("/auth", authRouter);
 
+const privateRouter = require("./routes/auth.routes"); // <== has to be added
+app.use("/private", privateRouter);
+// ❗ To handle errors. Routes that don't exist or errors that you handle in specific routes
 require("./error-handling")(app);
 
 module.exports = app;
