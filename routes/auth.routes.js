@@ -60,7 +60,7 @@ router.get("/login", isLoggedOut, (req, res) => {
 router.post("/login", isLoggedOut, (req, res, next) => {
   const { username, password } = req.body;
 
-  // Check that username, email, and password are provided
+  
   if (username === "" || password === "") {
     res.status(400).render("auth/login", {
       errorMessage:
@@ -98,7 +98,7 @@ router.post("/login", isLoggedOut, (req, res, next) => {
 
           res.redirect("/");
         })
-        .catch((err) => next(err)); // In this case, we send error handling to the error handling middleware.
+        .catch((err) => next(err));
     })
     .catch((err) => next(err));
 });
